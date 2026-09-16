@@ -1,2 +1,5 @@
-import { DemoApp } from '@/components/DemoApp';
-export default function PhoneDemo() { return <DemoApp phoneMode />; }
+import { redirect } from 'next/navigation';
+
+export default function PhoneDemo() {
+  redirect('/');
+}
