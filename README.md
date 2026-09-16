@@ -2,6 +2,9 @@
 
 A presentation demo with a Lincoln-inspired page, deterministic chat verification, context-preserving OpenAI Realtime WebRTC voice, and a direct voice FAQ route. This is not an official Lincoln servicing website or production financial system.
 
+- Public app: https://lincoln-financial-voice-demo.vercel.app
+- GitHub: https://github.com/ManishChandra-97/lincoln-financial-voice-demo
+
 ## Assistant prompts
 
 Edit [`prompts/assistantPrompts.ts`](prompts/assistantPrompts.ts). It is the
