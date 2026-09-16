@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import { createRealtimeConnection, type ConnectionCallbacks } from '../lib/realtime/createRealtimeConnection';
+import { createRealtimeConnection, VOICE_PLAYBACK_RATE, type ConnectionCallbacks } from '../lib/realtime/createRealtimeConnection';
 import { initialState } from '../lib/chat/chatMachine';
 const callbacks=():ConnectionCallbacks=>({status:()=>{},error:()=>{},transcript:()=>{},transfer:()=>{},audioBlocked:()=>{}});
 void test('late microphone permission after close immediately stops capture',async()=>{
@@ -13,12 +13,12 @@ void test('mute toggles track, context is sent, interruption keeps mic on, close
  let stopped=0,paused=0,removed=0,peerClosed=0,channelClosed=0;const track={enabled:true,stop(){stopped++;}};let sentBody='';
  const dc={readyState:'open',onopen:null as null|(()=>void),onmessage:null as null|((e:{data:string})=>void),onclose:null,onerror:null,send:()=>{},close(){channelClosed++;}};
  const pc={ontrack:null,onconnectionstatechange:null,connectionState:'connected',addTrack:()=>{},createDataChannel:()=>dc,createOffer:async()=>({sdp:'v=0\nm=audio'}),setLocalDescription:async()=>{},setRemoteDescription:async()=>{dc.onopen?.();},close(){peerClosed++;}};
- const audio={autoplay:false,srcObject:null,setAttribute:()=>{},play:async()=>{},pause(){paused++;},remove(){removed++;}};
+ const audio={autoplay:false,playbackRate:1,defaultPlaybackRate:1,preservesPitch:false,srcObject:null,setAttribute:()=>{},play:async()=>{},pause(){paused++;},remove(){removed++;}};
  Object.defineProperty(globalThis,'navigator',{value:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[track],getAudioTracks:()=>[track]})}},configurable:true});
  Object.defineProperty(globalThis,'RTCPeerConnection',{value:function(){return pc;},configurable:true});
  Object.defineProperty(globalThis,'document',{value:{createElement:()=>audio},configurable:true});
  const original=globalThis.fetch;globalThis.fetch=async(_url,init)=>{sentBody=typeof init?.body==='string'?init.body:'';return new Response('v=0\nm=audio');};
- try{const c=createRealtimeConnection(initialState().context,'phone-demo',callbacks());await c.start();assert.ok(sentBody.includes('handoffContext'));c.setMuted(true);assert.equal(track.enabled,false);c.setMuted(false);assert.equal(track.enabled,true);dc.onmessage?.({data:JSON.stringify({type:'input_audio_buffer.speech_started'})});assert.equal(track.enabled,true);c.close();c.close();assert.deepEqual([stopped,paused,removed,peerClosed,channelClosed],[1,1,1,1,1]);assert.equal(audio.srcObject,null);assert.equal(dc.onmessage,null);}finally{globalThis.fetch=original;}
+ try{const c=createRealtimeConnection(initialState().context,'phone-demo',callbacks());await c.start();assert.ok(sentBody.includes('handoffContext'));assert.equal(audio.playbackRate,VOICE_PLAYBACK_RATE);assert.equal(audio.defaultPlaybackRate,VOICE_PLAYBACK_RATE);assert.equal(audio.preservesPitch,true);c.setMuted(true);assert.equal(track.enabled,false);c.setMuted(false);assert.equal(track.enabled,true);dc.onmessage?.({data:JSON.stringify({type:'input_audio_buffer.speech_started'})});assert.equal(track.enabled,true);c.close();c.close();assert.deepEqual([stopped,paused,removed,peerClosed,channelClosed],[1,1,1,1,1]);assert.equal(audio.srcObject,null);assert.equal(dc.onmessage,null);}finally{globalThis.fetch=original;}
 });
 void test('permission failure is sanitized',async()=>{Object.defineProperty(globalThis,'navigator',{value:{mediaDevices:{getUserMedia:async()=>{throw new DOMException('private details','NotAllowedError');}}},configurable:true});let error='';const cb=callbacks();cb.error=m=>{error=m;};await createRealtimeConnection(initialState().context,'phone-demo',cb).start();assert.equal(error,'Microphone access is required for the voice demo.');});
 

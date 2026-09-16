@@ -1,6 +1,18 @@
 # Lincoln Financial chat → call demonstration
 
-A presentation demo with a Lincoln-inspired local page, deterministic chat verification, context-preserving OpenAI Realtime WebRTC voice, and a direct voice FAQ route. This is not an official Lincoln servicing website or production financial system.
+A presentation demo with a Lincoln-inspired page, deterministic chat verification, context-preserving OpenAI Realtime WebRTC voice, and a direct voice FAQ route. This is not an official Lincoln servicing website or production financial system.
+
+## Assistant prompts
+
+Edit [`prompts/assistantPrompts.ts`](prompts/assistantPrompts.ts). It is the
+single source of truth for chatbot instructions/messages and the Realtime
+voicebot prompt. The server adds only validated runtime handoff data, curated
+knowledge, and tool definitions. Voice output is played at 1.1× speed.
+
+Prompt changes reach the public app after they are committed and pushed to
+`main`: GitHub Actions runs the verification suite, and the Vercel Git
+integration builds and deploys the new commit. A failed Vercel build is not
+promoted to the production URL.
 
 ## Setup
 
@@ -13,17 +25,20 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open the localhost URL printed by the server (normally http://localhost:3000). The Sites scaffold uses Vinext, a Next.js App Router-compatible React/TypeScript framework on Vite and Cloudflare Workers, with Tailwind and the supplied accessible Base UI primitives. No database or real authentication service is used.
+Open the localhost URL printed by the server (normally http://localhost:3000).
+The app uses Next.js App Router, React, TypeScript, Tailwind, and accessible
+Base UI primitives. You can also run `npm run dev` from the parent directory.
+No database or real authentication service is used.
 
-A ChatGPT Plus subscription does not itself provide API usage. Use an OpenAI API Platform key with API billing enabled. Never put the key in a client variable or commit `.env.local`. For Sites hosting, set the key as a **secret runtime environment variable**, then redeploy. For local Workers runtime, `.env.local` is loaded by the Vite development server; production `npm start` may require `.dev.vars` or platform environment bindings instead.
+A ChatGPT Plus subscription does not itself provide API usage. Use an OpenAI API Platform key with API billing enabled. Never put the key in a client variable or commit `.env.local`. Both `npm run dev` and `npm start` load `.env.local` from this directory. To run the production build locally, use `npm run build` followed by `npm start`. Restart the server after changing environment variables.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `OPENAI_API_KEY` | empty | Server-only API credential; required for live voice |
-| `OPENAI_REALTIME_MODEL` | `gpt-realtime` | Realtime model |
-| `OPENAI_REALTIME_VOICE` | `alloy` | Supported voice |
-| `DEMO_RELAXED_AUTH` | `false` | If true, accept any five-digit demo OTP |
-| `DEMO_VOICE_FALLBACK` | `false` | Offer an explicitly labeled scripted transcript on voice failure |
+| Variable                | Default        | Purpose                                                          |
+| ----------------------- | -------------- | ---------------------------------------------------------------- |
+| `OPENAI_API_KEY`        | empty          | Server-only API credential; required for live voice              |
+| `OPENAI_REALTIME_MODEL` | `gpt-realtime` | Realtime model                                                   |
+| `OPENAI_REALTIME_VOICE` | `alloy`        | Supported voice                                                  |
+| `DEMO_RELAXED_AUTH`     | `false`        | If true, accept any five-digit demo OTP                          |
+| `DEMO_VOICE_FALLBACK`   | `false`        | Offer an explicitly labeled scripted transcript on voice failure |
 
 ## Demo paths
 
@@ -43,7 +58,7 @@ Microphone access starts only after pressing the headset or Start voice conversa
 4. Enter demo OTP **48197**. No SMS is sent. Other codes fail unless relaxed mode is enabled.
 5. Scenario A: select **Family emergency**, or type “I’m having a family emergency. Can I speak to an agent?”
 6. Scenario B: select **Personal loan / new car**, or type “I’m looking for a personal loan. Can I speak to an agent?”
-7. Wait for the explicit acknowledgment, then use **Continue by voice** in the top-right of chat. If chat is closed, the headset appears at the top-right of the page.
+7. Use the headset icon or **Continue by voice agent** in the chat header at any point. Voice uses the fixed direct-support flow and does not depend on the current chat state. If chat is closed, reopen it with the bottom-right chat launcher.
 8. Allow microphone access. In A, volunteer lack of insurance and ask for the walkthrough; the assistant should wait between steps. In B, mention a new car and frustration; the assistant should explain only the demo restriction and offer a specialist.
 9. Mute/unmute, interrupt naturally, or end the call. Return to chat retains context; reset clears it.
 
@@ -51,11 +66,12 @@ For rehearsals without API access, set `DEMO_VOICE_FALLBACK=true`, restart, open
 
 ## Architecture and privacy
 
-- `lib/chat/chatMachine.ts`: pure finite-state transitions; verification, scenario selection and handoff readiness never use an LLM. `TRANSFER_ACKNOWLEDGED` becomes `VOICE_READY` only when the final acknowledgment is displayed.
+- `prompts/assistantPrompts.ts`: the editable source of chatbot and voicebot instructions and assistant wording.
+- `lib/chat/chatMachine.ts`: pure finite-state transitions driven by the chatbot prompt copy; verification, scenario selection and handoff readiness never use an LLM. `TRANSFER_ACKNOWLEDGED` becomes `VOICE_READY` only when the final acknowledgment is displayed.
 - `components/chat/ChatPanel.tsx`: chat UI, seeded verification, quick replies, reset, and cancellation of delayed replies.
-- `lib/realtime/createRealtimeConnection.ts`: native media/WebRTC lifecycle, track mute, data-channel events, sanitized transcripts, disconnect handling and idempotent cleanup. Late permission grants after close stop their tracks immediately.
+- `lib/realtime/createRealtimeConnection.ts`: native media/WebRTC lifecycle, 1.1× audio playback, track mute, data-channel events, sanitized transcripts, disconnect handling and idempotent cleanup. Late permission grants after close stop their tracks immediately.
 - `app/api/realtime/session/route.ts`: bounded request body and context validation; server builds instructions and sends multipart SDP/session to `POST https://api.openai.com/v1/realtime/calls`. Browser receives only SDP. Audio travels directly over WebRTC.
-- `lib/realtime/buildVoiceInstructions.ts`: server-owned prompt and tool schemas. Curated Markdown is imported into the Worker bundle at build time. Client-provided plan facts cannot override the server plan. Handoff content is explicitly untrusted data.
+- `lib/realtime/buildVoiceInstructions.ts`: inserts validated runtime context and curated Markdown into the server-owned voice prompt. Client-provided plan facts cannot override the server plan. Handoff content is explicitly untrusted data.
 - `components/voice/VoiceAgentModal.tsx`: listening/speaking/muted/error/ended UI, transcript, playback recovery, scripted fallback and simulated transfer summary.
 - `knowledge/`: grounded FAQ material and source availability limitations.
 
@@ -63,7 +79,7 @@ The handoff includes verification **status**, a fully masked identifier, initial
 
 `request_human_transfer` displays a summary and marks a **simulated** handoff ready. It never places a phone call. A future telephony integration can replace that seam. `end_call` closes after the spoken closing finishes. Server VAD supports interruptions and WebRTC manages playout truncation; microphone input remains enabled while the assistant speaks.
 
-This intentionally demo-only verification is not an authorization boundary. Before public, multi-user production deployment, add real authentication/authorization, abuse prevention, rate limits, retention policy and approved financial content. Current intended hosting is owner-private.
+This intentionally demo-only verification is not an authorization boundary. Before public, multi-user production deployment, add real authentication/authorization, abuse prevention, rate limits, retention policy and approved financial content. This application is intended to run locally.
 
 ## Validation
 

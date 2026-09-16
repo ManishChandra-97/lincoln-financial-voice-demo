@@ -3,6 +3,7 @@ import { redact } from '../chat/intentRules';
 export type VoiceStatus = 'idle'|'requesting microphone'|'connecting'|'listening'|'assistant speaking'|'ending'|'ended'|'error';
 export type Transfer = {reason: string; customerSummary: string};
 export type ConnectionCallbacks = {status:(status:VoiceStatus)=>void; error:(message:string)=>void; transcript:(message:Message)=>void; transfer:(summary:Transfer)=>void; audioBlocked:()=>void};
+export const VOICE_PLAYBACK_RATE = 1.1;
 export function createRealtimeConnection(context:HandoffContext, mode:Mode, callbacks:ConnectionCallbacks) {
  let pc:RTCPeerConnection|undefined, stream:MediaStream|undefined, dc:RTCDataChannel|undefined, audio:HTMLAudioElement|undefined;
  let closed=false, started=false, ending=false, playing=false, muted=false;
@@ -35,7 +36,7 @@ export function createRealtimeConnection(context:HandoffContext, mode:Mode, call
   try {
    const acquired=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
    if(closed){acquired.getTracks().forEach(t=>t.stop());return;} stream=acquired; stream.getAudioTracks().forEach(t=>{t.enabled=!muted;});
-   callbacks.status('connecting'); pc=new RTCPeerConnection(); audio=document.createElement('audio');audio.autoplay=true;audio.setAttribute('playsinline','');
+   callbacks.status('connecting'); pc=new RTCPeerConnection(); audio=document.createElement('audio');audio.autoplay=true;audio.playbackRate=VOICE_PLAYBACK_RATE;audio.defaultPlaybackRate=VOICE_PLAYBACK_RATE;audio.preservesPitch=true;audio.setAttribute('playsinline','');
    const connectTimer=delay(()=>fail('The voice assistant couldn’t connect. Please try again.'),35000);
    pc.ontrack=e=>{if(audio){audio.srcObject=e.streams[0]||new MediaStream([e.track]);void audio.play().catch(()=>{if(!closed)callbacks.audioBlocked();});}};
    pc.onconnectionstatechange=()=>{if(pc?.connectionState==='failed')fail('Connection lost. Please try again.');if(pc?.connectionState==='disconnected')delay(()=>{if(pc?.connectionState==='disconnected')fail('Connection lost. Please try again.');},5000);};
