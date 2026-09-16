@@ -1,0 +1,1 @@
+export async function GET() { return Response.json({ fallbackEnabled: process.env.DEMO_VOICE_FALLBACK === 'true', voiceConfigured: Boolean(process.env.OPENAI_API_KEY?.trim()) }, { headers: { 'Cache-Control': 'no-store' } }); }

@@ -1,0 +1,1 @@
+export const DEMO_PLAN = Object.freeze({ hardshipWithdrawalsAllowed: true, documentationRequired: true, processingTimeText: 'Processing time varies after all required documentation is received.', nonHardshipWhileEmployedAllowed: false });
