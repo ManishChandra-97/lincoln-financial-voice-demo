@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 export const metadata: Metadata = {
-  title: 'Lincoln Financial',
+  title: 'Chicago Financial',
   description:
     'Clear financial guidance with AI-powered chat and voice support.',
   robots: { index: false, follow: false },

@@ -38,7 +38,8 @@ export function VoiceAgentModal({
     [index, setIndex] = useState(0),
     [transfer, setTransfer] = useState<Transfer | null>(null),
     [transferReady, setTransferReady] = useState(false),
-    [attempt, setAttempt] = useState(0);
+    [attempt, setAttempt] = useState(0),
+    [detailsDismissed, setDetailsDismissed] = useState(false);
   const startupAbort = useRef<AbortController | null>(null);
   const connection = useRef<RealtimeConnection | null>(null),
     log = useRef<HTMLDivElement>(null);
@@ -100,6 +101,15 @@ export function VoiceAgentModal({
       behavior: 'smooth',
     });
   }, [transcript, transfer]);
+  const callerReason =
+    context.postAuthIntent ||
+    context.initialIntent ||
+    [...transcript].reverse().find((item) => item.role === 'user')?.text ||
+    (context.scenario === 'HARDSHIP_MEDICAL'
+      ? 'Hardship withdrawal inquiry'
+      : context.scenario === 'NON_HARDSHIP_CAR'
+        ? 'Distribution for a vehicle purchase'
+        : 'Retirement plan support');
   const stop = () => {
     startupAbort.current?.abort();
     connection.current?.close();
@@ -198,7 +208,7 @@ export function VoiceAgentModal({
         <Headphones size={34} />
       </div>
       <h2 className="voice-title" id="voice-agent-title">
-        Lincoln Financial
+        Chicago Financial
         <br />
         virtual assistant
       </h2>
@@ -354,6 +364,51 @@ export function VoiceAgentModal({
             <span>End call</span>
           </button>
         </div>
+      )}
+      {!detailsDismissed && status === 'ended' && (
+        <dialog
+          open
+          className="caller-details-popup"
+          aria-labelledby="caller-details-title"
+        >
+          <div className="caller-details-card">
+            <div className="voice-top">
+              <strong id="caller-details-title">Caller details</strong>
+              <button
+                className="icon-button"
+                aria-label="Close caller details"
+                onClick={() => setDetailsDismissed(true)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <dl>
+              <div>
+                <dt>Name</dt>
+                <dd>Michael Williams</dd>
+              </div>
+              <div>
+                <dt>Customer ID</dt>
+                <dd>LF-2048197</dd>
+              </div>
+              <div>
+                <dt>Reason for call</dt>
+                <dd>{callerReason}</dd>
+              </div>
+              <div>
+                <dt>Phone number</dt>
+                <dd>+13035451670</dd>
+              </div>
+              <div>
+                <dt>Email</dt>
+                <dd>michael.williams1898@gmail.com</dd>
+              </div>
+            </dl>
+            <button className="primary-button" onClick={close}>
+              Done <ArrowRight size={16} />
+            </button>
+          </div>
+        </dialog>
       )}
       <p className="voice-disclaimer">AI-powered voice support</p>
     </dialog>

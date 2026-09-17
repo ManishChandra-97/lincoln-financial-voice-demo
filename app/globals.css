@@ -587,6 +587,50 @@ input:focus-visible {
   font-size: 9px;
 }
 
+.caller-details-popup {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(255 255 255 / 88%);
+}
+
+.caller-details-card {
+  width: min(100%, 360px);
+  padding: 18px;
+  border: 1px solid #111;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 16%);
+}
+
+.caller-details-card .voice-top {
+  margin-bottom: 14px;
+}
+.caller-details-card dl {
+  margin: 0 0 16px;
+}
+.caller-details-card dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+}
+.caller-details-card dt {
+  color: #666;
+  font-size: 12px;
+}
+.caller-details-card dd {
+  margin: 0;
+  max-width: 210px;
+  text-align: right;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
 @keyframes pulse {
   to {
     opacity: 0.25;

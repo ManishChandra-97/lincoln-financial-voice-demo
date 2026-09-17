@@ -119,7 +119,7 @@ export function ChatPanel({
               <>
                 <header className="chat-header">
                   <div>
-                    <DialogTitle>Lincoln Financial</DialogTitle>
+                    <DialogTitle>Chicago Financial</DialogTitle>
                     <DialogDescription>Virtual assistant</DialogDescription>
                   </div>
                   <button

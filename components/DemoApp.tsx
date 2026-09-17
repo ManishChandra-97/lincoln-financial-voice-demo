@@ -11,13 +11,13 @@ export function DemoApp() {
     <div className="site-shell">
       <header className="minimal-header">
         <Link className="minimal-brand" href="/">
-          Lincoln Financial
+          Chicago Financial
         </Link>
         <span>Financial guidance, made clearer.</span>
       </header>
 
       <main className="minimal-main">
-        <p className="minimal-kicker">LINCOLN FINANCIAL</p>
+        <p className="minimal-kicker">CHICAGO FINANCIAL</p>
         <h1>
           Clear guidance.
           <br />
@@ -43,7 +43,7 @@ export function DemoApp() {
       </main>
 
       <footer className="minimal-footer">
-        <span>Lincoln Financial</span>
+        <span>Chicago Financial</span>
         <span>AI-powered client support</span>
       </footer>
 
