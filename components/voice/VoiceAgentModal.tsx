@@ -161,7 +161,7 @@ export function VoiceAgentModal({
   const statusText = scripted
     ? status === 'ended'
       ? 'Call ended'
-      : 'Guided transcript · no live audio'
+      : 'Connected'
     : error
       ? fallback
         ? 'Voice unavailable'
@@ -185,7 +185,7 @@ export function VoiceAgentModal({
       aria-labelledby="voice-agent-title"
     >
       <div className="voice-top">
-        <span>AI VOICE</span>
+        <span>VOICE SUPPORT</span>
         <button
           className="icon-button"
           aria-label="Close voice call"
@@ -198,7 +198,7 @@ export function VoiceAgentModal({
         <Headphones size={34} />
       </div>
       <h2 className="voice-title" id="voice-agent-title">
-        Chicago Financial
+        Lincoln Financial
         <br />
         virtual assistant
       </h2>

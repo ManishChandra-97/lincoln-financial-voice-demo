@@ -20,7 +20,7 @@ export function ChatPanel({
   open: boolean;
   setOpen: (open: boolean) => void;
 }) {
-  const [state, setState] = useState<ChatState>(initialState);
+  const [state, setState] = useState<ChatState>(initialState());
   const [busy, setBusy] = useState(false);
   const [input, setInput] = useState('');
   const [voice, setVoice] = useState(false);
@@ -52,7 +52,20 @@ export function ChatPanel({
     if (!value.trim() || busy) return;
     setBusy(true);
     setInput('');
-    const result = transition(stateRef.current, value);
+    let otpValid = false;
+    if (stateRef.current.step === 'ASK_OTP') {
+      try {
+        const response = await fetch('/api/demo/verify', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ otp: value }),
+        });
+        otpValid = (await response.json()).valid === true;
+      } catch {
+        otpValid = false;
+      }
+    }
+    const result = transition(stateRef.current, value, otpValid);
     update(result.state);
 
     await new Promise<void>((resolve) => {
@@ -106,8 +119,8 @@ export function ChatPanel({
               <>
                 <header className="chat-header">
                   <div>
-                    <DialogTitle>Chicago Financial</DialogTitle>
-                    <DialogDescription>AI assistant</DialogDescription>
+                    <DialogTitle>Lincoln Financial</DialogTitle>
+                    <DialogDescription>Virtual assistant</DialogDescription>
                   </div>
                   <button
                     className="agent-handoff"
@@ -164,10 +177,20 @@ export function ChatPanel({
                   <input
                     ref={inputRef}
                     id="chat-input"
-                    type="text"
+                    type={
+                      state.step === 'ASK_LAST4' || state.step === 'ASK_OTP'
+                        ? 'tel'
+                        : 'text'
+                    }
                     autoComplete="off"
                     maxLength={1000}
-                    placeholder="Type a message"
+                    placeholder={
+                      state.step === 'ASK_LAST4'
+                        ? 'Last four digits'
+                        : state.step === 'ASK_OTP'
+                          ? 'Five-digit passcode'
+                          : 'Type a message'
+                    }
                     value={input}
                     onChange={(event) => setInput(event.target.value)}
                     disabled={busy}

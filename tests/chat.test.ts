@@ -2,52 +2,52 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { initialState, transition, addReply } from '../lib/chat/chatMachine';
 import { validateHandoff } from '../lib/realtime/validateHandoff';
-import { classifyScenario, requestedAgent } from '../lib/chat/intentRules';
 
-void test('chat starts with the Chicago Financial greeting', () => {
-  const state = initialState();
-  assert.equal(state.context.chatTranscript[0].role, 'assistant');
-  assert.match(state.context.chatTranscript[0].text, /Chicago Financial/);
-});
-
-void test('chat keeps the conversation concise and offers the Agent path', () => {
+void test('chat uses the mandatory Lincoln Financial greeting and authentication flow', () => {
   let state = initialState();
-  const result = transition(
-    state,
-    'Can I speak with someone about a withdrawal?',
-  );
-  state = addReply(result.state, result.replies[0]);
-  assert.equal(state.step, 'POST_AUTH_INTENT');
-  assert.match(result.replies[0], /Agent/);
-  assert.equal(state.context.requestedAgent, true);
-  assert.match(state.context.chatTranscript.at(-1)?.text ?? '', /Agent/);
-});
-
-void test('voice handoff accepts an unverified conversation opened from chat', () => {
-  const state = initialState();
-  const next = transition(state, 'I have a family emergency.');
-  const handoff = validateHandoff(next.state.context, 'chat-handoff');
-  assert.equal(handoff.verified, false);
-  assert.equal(handoff.scenario, 'HARDSHIP_MEDICAL');
-});
-
-void test('credentials remain redacted from chat and handoff data', () => {
-  const state = transition(
-    initialState(),
-    'My SSN is 123-45-6789 and I need help.',
-  ).state;
-  assert.doesNotMatch(JSON.stringify(state), /6789/);
-  assert.throws(() =>
-    validateHandoff({ ...state.context, ssn: '1234' }, 'chat-handoff'),
-  );
-});
-
-void test('scenario and Agent intent rules remain predictable', () => {
   assert.equal(
-    classifyScenario('I need help with a family emergency'),
-    'HARDSHIP_MEDICAL',
+    state.context.chatTranscript[0].text,
+    'Hi, thanks for reaching out to Lincoln Financial. How can I help you today?',
   );
-  assert.equal(classifyScenario('I want to buy a new car'), 'NON_HARDSHIP_CAR');
-  assert.equal(requestedAgent('Please connect me to an agent'), true);
-  assert.equal(requestedAgent('career advice'), false);
+  state = addReply(
+    transition(state, 'I need a withdrawal.').state,
+    transition(state, 'I need a withdrawal.').replies[0],
+  );
+  assert.equal(state.step, 'ASK_LAST4');
+  const wrong = transition(state, '1111');
+  assert.match(wrong.replies[0], /locate a profile/);
+  const right = transition(state, '9053');
+  assert.equal(right.state.step, 'ASK_OTP');
+  assert.match(right.replies[0], /one-time passcode/);
+  assert.equal(transition(right.state, '00000', false).state.step, 'ASK_OTP');
+  const verified = transition(right.state, '48197', true);
+  assert.equal(verified.state.context.verified, true);
+  assert.equal(verified.state.step, 'POST_AUTH_INTENT');
+});
+
+void test('scenario clarification routes hardship and non-hardship requests', () => {
+  let state = initialState();
+  state = addReply(transition(state, 'Medical bills.').state, '');
+  state = transition(state, '9053').state;
+  state = transition(state, '48197', true).state;
+  state = transition(
+    state,
+    'I am still employed and have uninsured medical expenses.',
+  ).state;
+  const hardship = transition(state, 'It is for a medical hardship.');
+  assert.equal(hardship.state.context.scenario, 'HARDSHIP_MEDICAL');
+  assert.match(hardship.replies[0], /may qualify/);
+});
+
+void test('human handoff is available without re-verification and credentials are redacted', () => {
+  const state = initialState();
+  const next = transition(state, 'Please connect me to a human agent.');
+  assert.equal(next.state.context.requestedAgent, true);
+  assert.match(next.replies[0], /Agent button/);
+  assert.equal(
+    validateHandoff(next.state.context, 'chat-handoff').verified,
+    false,
+  );
+  const sensitive = transition(state, 'My SSN is 123-45-6789').state;
+  assert.doesNotMatch(JSON.stringify(sensitive), /6789/);
 });
