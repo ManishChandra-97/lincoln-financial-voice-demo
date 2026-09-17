@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       throw new Error('sdp');
     context = validateHandoff(body.handoffContext, body.mode);
   } catch {
-    return fail(400, 'Invalid or unsafe handoff data.');
+    return fail(400, 'The conversation could not be started. Please try again.');
   }
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey)

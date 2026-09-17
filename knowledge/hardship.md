@@ -1,7 +1,6 @@
-# Hardship questions — demonstration only
-Source: explicit deterministic facts and walkthrough supplied in lincoln-chat-to-call-demo-SKILL.md, sections 11–13. These are fictional demo-plan facts, not verified Lincoln policy.
-This demo plan allows hardship withdrawals and requires supporting documentation. Availability is not an eligibility determination.
-Demonstration walkthrough: log into the account; select Withdrawals & Distributions; select Hardship Withdrawal; upload required documentation; submit for review. These screen labels require Lincoln approval before real servicing use.
-Processing time varies after all required documentation is received. No numerical service commitment is available.
-Under the configured demo criteria, a new-car purchase is not a hardship reason. Do not generalize this to every retirement plan or every possible distribution.
-Always offer a simulated specialist handoff. No live representative or real request is created.
+# Hardship questions
+
+The available plan information permits hardship withdrawals when plan requirements are met and supporting documentation is provided. This is not an eligibility determination.
+General steps: sign in; open Withdrawals & Distributions; choose Hardship Withdrawal; attach the requested documentation; submit for review.
+Processing time varies after all requested documentation is received. No exact service commitment is available.
+A vehicle purchase is not listed as a hardship reason in the supplied plan information. Do not generalize this to every retirement plan or distribution option.

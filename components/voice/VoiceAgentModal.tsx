@@ -161,10 +161,10 @@ export function VoiceAgentModal({
   const statusText = scripted
     ? status === 'ended'
       ? 'Call ended'
-      : 'Scripted transcript · no live audio'
+      : 'Guided transcript · no live audio'
     : error
       ? fallback
-        ? 'Demo voice unavailable'
+        ? 'Voice unavailable'
         : 'Unable to connect'
       : muted
         ? 'Muted'
@@ -185,7 +185,7 @@ export function VoiceAgentModal({
       aria-labelledby="voice-agent-title"
     >
       <div className="voice-top">
-        <span>VOICE SUPPORT</span>
+        <span>AI VOICE</span>
         <button
           className="icon-button"
           aria-label="Close voice call"
@@ -198,7 +198,7 @@ export function VoiceAgentModal({
         <Headphones size={34} />
       </div>
       <h2 className="voice-title" id="voice-agent-title">
-        Lincoln Financial
+        Chicago Financial
         <br />
         virtual assistant
       </h2>
@@ -223,12 +223,9 @@ export function VoiceAgentModal({
         <div className="carryover">
           <ShieldCheck size={18} />
           <div>
-            <strong>Context carried over</strong>
+            <strong>Conversation connected</strong>
             <span>
-              {context.verified
-                ? 'Demo verification complete'
-                : 'General support'}{' '}
-              ·{' '}
+              {context.verified ? 'Verification complete' : 'General support'} ·{' '}
               {context.scenario === 'HARDSHIP_MEDICAL'
                 ? 'Family emergency'
                 : context.scenario === 'NON_HARDSHIP_CAR'
@@ -257,7 +254,7 @@ export function VoiceAgentModal({
           </button>
           {fallback && (
             <button className="text-link" onClick={startScript}>
-              Continue with scripted transcript <ArrowRight size={16} />
+              Continue with guided transcript <ArrowRight size={16} />
             </button>
           )}
         </div>
@@ -291,17 +288,16 @@ export function VoiceAgentModal({
         <div className="transfer-card" aria-live="polite">
           <strong>
             <Check size={16} />
-            {transferReady ? 'Demo transfer ready' : 'Preparing transfer…'}
+            {transferReady ? 'Follow-up ready' : 'Preparing follow-up…'}
           </strong>
           <p>{transfer.customerSummary}</p>
-          <span>All chat and voice context will be carried forward.</span>
-          <small>Simulated transfer. No real phone call is placed.</small>
+          <span>Relevant chat and voice context is included.</span>
         </div>
       )}
       {scripted && status !== 'ended' && (
         <div className="script-actions">
           <button className="primary-button" onClick={next}>
-            {script[index].reply || 'Finish demonstration'}
+            {script[index].reply || 'Finish'}
             <ArrowRight size={16} />
           </button>
           <button
@@ -321,7 +317,7 @@ export function VoiceAgentModal({
               });
             }}
           >
-            Prepare a demo specialist handoff
+            Prepare specialist follow-up
           </button>
         </div>
       )}
@@ -359,9 +355,7 @@ export function VoiceAgentModal({
           </button>
         </div>
       )}
-      <p className="voice-disclaimer">
-        Demo experience. No real account or transaction.
-      </p>
+      <p className="voice-disclaimer">AI-powered voice support</p>
     </dialog>
   );
 }
