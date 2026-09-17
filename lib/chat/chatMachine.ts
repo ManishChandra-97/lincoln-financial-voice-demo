@@ -92,7 +92,7 @@ export function transition(state: ChatState, input: string, otpValid = false) {
       );
     else {
       next.step = 'ASK_OTP';
-      next.context.accountLast4Masked = '****';
+      next.context.accountLast4Masked = '••••';
       replies.push(
         "Thanks, I've sent a one-time passcode to your registered contact. Can you share that code with me?",
       );
