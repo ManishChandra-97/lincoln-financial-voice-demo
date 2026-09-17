@@ -25,7 +25,7 @@ const initialStateValue: ChatState = {
     chatTranscript: [
       {
         role: 'assistant',
-        text: 'Hi, thanks for reaching out to Lincoln Financial. How can I help you today?',
+        text: 'Hi, thanks for reaching out to Chicago Financial. How can I help you today?',
         timestamp: now(),
       },
     ],
@@ -136,7 +136,7 @@ export function transition(state: ChatState, input: string, otpValid = false) {
     } else {
       next.step = 'POST_AUTH_INTENT';
       replies.push(
-        'I can help with Lincoln Financial retirement plan matters, including hardship withdrawals, distributions, and plan loans. Please tell me whether you are still employed and what you need the money for.',
+        'I can help with Chicago Financial retirement plan matters, including hardship withdrawals, distributions, and plan loans. Please tell me whether you are still employed and what you need the money for.',
       );
     }
   }

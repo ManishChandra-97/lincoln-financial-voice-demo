@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { initialState, transition, addReply } from '../lib/chat/chatMachine';
 import { validateHandoff } from '../lib/realtime/validateHandoff';
 
-void test('chat uses the mandatory Lincoln Financial greeting and authentication flow', () => {
+void test('chat uses the mandatory Chicago Financial greeting and authentication flow', () => {
   let state = initialState();
   assert.equal(
     state.context.chatTranscript[0].text,
-    'Hi, thanks for reaching out to Lincoln Financial. How can I help you today?',
+    'Hi, thanks for reaching out to Chicago Financial. How can I help you today?',
   );
   state = addReply(
     transition(state, 'I need a withdrawal.').state,
